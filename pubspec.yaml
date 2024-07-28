@@ -1,0 +1,41 @@
+name: spy
+description: "Spy game"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.1 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+
+# The following section is specific to Flutter packages.
+flutter:
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - assets/json/
+
+  fonts:
+    - family: IranYekanX
+      fonts:
+        - asset: assets/fonts/IRANYekanX-Black.ttf
+          weight: 800
+        - asset: assets/fonts/IRANYekanX-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/IRANYekanX-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/IRANYekanX-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/IRANYekanX-Regular.ttf
+          weight: 400
