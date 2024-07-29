@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:spy/controller/game_controller.dart';
-import 'package:spy/controller/word_controller.dart';
-import 'package:spy/json_reader.dart';
-import 'package:spy/utils/utils.dart';
-import 'package:spy/view/game_widget.dart';
-import 'package:spy/view/timer_widget.dart';
+
+import '../controller/game_controller.dart';
+import '../controller/word_controller.dart';
+import '../model/game.dart';
+import '../model/game_config.dart';
+import '../utils/utils.dart';
+import 'game_widget.dart';
+import 'init_game_widget.dart';
+import 'timer_widget.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,25 +42,56 @@ class _HomePageState extends State<HomePage> {
         duration: const Duration(milliseconds: 300),
         switchInCurve: Curves.easeIn,
         switchOutCurve: Curves.easeOut,
-        child: _controller == null
+        child: !WordController.isWordsLoaded
             ? const Center(
                 child: CircularProgressIndicator.adaptive(),
               )
-            : ValueListenableBuilder(
-                valueListenable: _controller!,
-                builder: (context, value, child) {
-                  if (value.isLastPlayer) {
-                    return TimerWidget(
-                      remain: value.duration,
-                      builder: (duration) => Text(
-                        FormatUtils.durationFormat(duration),
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    );
-                  }
-                  return GameWidget(game: value);
-                },
-              ),
+            : _controller == null
+                ? InitGameWidget(onStart: _onStart)
+                : ValueListenableBuilder(
+                    valueListenable: _controller!,
+                    builder: (context, value, child) {
+                      if (value.isLastPlayer) {
+                        return Center(
+                          child: TimerWidget(
+                            config: value.getConfig,
+                            remain: value.remain,
+                            onFinishClick: () {
+                              _controller?.finish();
+                              setState(() {
+                                _controller = null;
+                              });
+                            },
+                            builder: (duration) => SizedBox(
+                              width: double.infinity,
+                              height: 80,
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                switchInCurve: Curves.easeIn,
+                                switchOutCurve: Curves.easeOut,
+                                child: Text(
+                                  FormatUtils.durationFormat(duration),
+                                  key: ValueKey(duration),
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .displayMedium
+                                      ?.copyWith(
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      return GameWidget(
+                        game: value,
+                        onShowClick: _controller?.next,
+                      );
+                    },
+                  ),
       );
 
   void _handleInitState() {
@@ -65,9 +99,24 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _loadWords() async {
-    final words = await WordController.loadWords();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await WordController.loadWords();
+      setState(() {});
+    });
+  }
+
+  void _onStart(int playerCount, int spyCount) {
     setState(() {
-      
+      _controller = GameController(
+        Game(
+          GameConfig(
+            gamersCount: playerCount,
+            spyCount: spyCount,
+            word: WordController.getRandomWord,
+            durationInMinutes: 3,
+          ),
+        ),
+      );
     });
   }
 }

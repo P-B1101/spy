@@ -43,4 +43,10 @@ class GameController extends ValueNotifier<Game> implements IGame {
     _isDisposed = true;
     super.dispose();
   }
+
+  @override
+  String? get getWord => _game.getWord;
+
+  @override
+  bool get isSpyTurn => _game.isSpyTurn;
 }
